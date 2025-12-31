@@ -1,0 +1,24 @@
+[project]
+name = "vcg"
+version = "2025.12.27.1109"
+authors = [
+	{ name="Jordan Jueckstock", email = "jjueckstock@protonmail.com" },
+]
+description = "Barebones verse flashcard generator Web app (with TeXLive used on the backend for PDF generation)."
+readme = "README.md"
+requires-python = ">=3.13"
+license = "GPL-2.0"
+license-files = ["LICENSE"]
+dependencies = [
+	"flask",
+	"pystache",
+]
+
+[project.scripts]
+vcgd = "vcg.__main__:entry"
+
+[build-system]
+requires = ["hatchling >= 1.26"]
+build-backend = "hatchling.build"
+
+

@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="en-US">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{% block title %}Verse Card Generator{% endblock %}</title>
+    {% block head %}
+    <link rel="stylesheet" href="static/style.css">
+    <meta name="description" content="">
+    <meta name="theme-color" content="#fafafa">
+    <script src="static/htmx.min.js"></script>
+    {% endblock %}
+</head>
+<body>
+    <div id="content">{% block content %}Hello, world!{% endblock %}</div>
+    <div id="footer">
+        {% block footer %}
+        &copy; Copyright 2025 by Jordan Jueckstock.
+        {% endblock %}
+    </div>
+</body>
+</html>

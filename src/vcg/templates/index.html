@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+{% block content %}
+<div id="existing-cards">
+    {% for card in session.get("cards", []) %}
+    <details class="verse-card">
+        <summary>
+            {{ card.title }}
+            <button class="delete" hx-target="closest .verse-card" hx-swap="delete" hx-post="{{ url_for('delete_verse', uuid=card.uuid) }}">X</button>
+        </summary>
+        <form hx-put="{{ url_for('set_card_options', uuid=card.uuid) }}" hx-swap="innerHTML settle:3s" hx-target="#toast-{{ card.uuid }}">
+            <fieldset><legend>Card Options:</legend>
+            {% for okey, odef in card_option_map.items() %}
+                <div><label>{{ odef.info }}
+                {% if odef.ctrl == "checkbox" %}
+                    <input type="checkbox" name="{{ okey }}" {% if card.get("options", {}).get(okey, odef.default) %}checked{% endif %}>
+                {% elif odef.ctrl == "select" %}
+                    <select name="{{ okey }}">
+                    {% for sz in odef.choices %}
+                        <option value="{{ sz }}" {% if card.get("options", {}).get(okey, odef.default) == sz %}selected{% endif %}>{{ sz }}</option>
+                    {% endfor %}
+                    </select>
+                {% else %}
+                    <input type="text" name="{{ okey }}" value="{{ card.get("options", {}).get(okey, odef.default) }}">
+                {% endif %}
+                </label></div>
+            {% endfor %}
+            <input type="submit" value="Apply">
+            <output id="toast-{{ card.uuid }}"></output>
+            </fieldset>
+        </form>
+        <table>
+            {% for vv in card.verses %}
+            <tr>
+                <td><span class="versenum">{{ vv.num }}.</span></td>
+                <td><p class="versetxt">{{ vv.text }}</p></td>
+            </tr>
+            {% endfor %}
+        </table>
+    </details>
+    {% endfor %}
+</div>
+<div id="new-card">
+{% with flashes = get_flashed_messages(with_categories=True) %}
+    {% if flashes %}
+        <ul class="flashes">
+        {% for category, message in flashes %}
+            <li class="{{ category }}">{{ message }}</li>
+        {% endfor %}
+        </ul>
+    {% endif %}
+{% endwith %}
+<form id="new-card-form" method="POST">
+    <select name="book">
+    {% with selbook = session.get("book") %}
+    {% for key, book in bookmap %}
+        <option value="{{key}}" {% if key == selbook %}selected{% endif %}>{{ book }}</option>
+    {% endfor %}
+    {% endwith %}
+    </select>
+    <input name="chapvers" type="text" value="{{ session.get("chapvers", "") }}">
+    <input name="action" type="submit" value="Add"><br/>
+    <hr />
+    <input name="action" type="submit" value="PDF">
+    <input name="action" type="submit" value="LaTeX">
+    <input name="action" type="submit" value="Reset" onclick="return confirm('Are you SURE you want to reset and lose all your verse cards?!!')">
+</form>
+</div>
+{% endblock %}
