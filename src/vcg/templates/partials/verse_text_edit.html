@@ -1,0 +1,10 @@
+<form>
+<textarea name="newtext">{{ verse.text }}</textarea>
+<button hx-get="{{ url_for('cancel_edit_card_verse_text', uuid=card.uuid, num=verse.num) }}"
+    hx-target="closest td"
+    hx-swap="innerHTML">Cancel</button>
+ <button hx-put="{{ url_for('edit_card_verse_text', uuid=card.uuid, num=verse.num) }}"
+    hx-target="closest td"
+    hx-swap="innerHTML">Save</button>
+</form>
+   

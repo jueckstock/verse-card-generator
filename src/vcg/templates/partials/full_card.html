@@ -1,0 +1,35 @@
+<details id="card-{{ card.uuid }}" class="verse-card">
+    <summary>
+        {{ card.title }}
+        <button title="Edit Reference/Title" class="edit" hx-target="closest .verse-card" hx-swap="outerHTML" hx-get="{{ url_for('edit_card_title', uuid=card.uuid) }}">T</button>
+        <button title="Delete Card" class="delete" hx-target="closest .verse-card" hx-swap="delete" hx-delete="{{ url_for('delete_card', uuid=card.uuid) }}">X</button>
+    </summary>
+    <form hx-put="{{ url_for('set_card_options', uuid=card.uuid) }}" hx-trigger="change" hx-swap="none">
+        <fieldset><legend>Card Options:</legend>
+        {% for okey, odef in card_option_map.items() %}
+            <div><label>{{ odef.info }}
+            {% if odef.ctrl == "checkbox" %}
+                <input type="checkbox" name="{{ okey }}" {% if card.options.get(okey, odef.default) %}checked{% endif %}>
+            {% elif odef.ctrl == "select" %}
+                <select name="{{ okey }}">
+                {% for sz in odef.choices %}
+                    <option value="{{ sz }}" {% if card.options.get(okey, odef.default) == sz %}selected{% endif %}>{{ sz }}</option>
+                {% endfor %}
+                </select>
+            {% else %}
+                <input type="text" name="{{ okey }}" value="{{ card.options.get(okey, odef.default) }}>
+            {% endif %}
+            </label></div>
+        {% endfor %}
+        </fieldset>
+    </form>
+    <table>
+        {% for verse in card.verses %}
+        <tr>
+            <td><span class="versenum">{{ verse.num }}.</span></td>
+            <td>{% include "partials/verse_text.html" with context %}</td>
+        </tr>
+        {% endfor %}
+    </table>
+</details>
+

@@ -1,0 +1,14 @@
+<details id="card-{{ card.uuid }}" class="verse-card" open>
+    <summary>{{ card.title }}</summary>
+    <form>
+        <fieldset><legend>Reference/Title:</legend>
+        <input type="text" name="newtitle" value="{{ card.title }}">
+        <button hx-get="{{ url_for('cancel_edit_card_title', uuid=card.uuid) }}" 
+            hx-target="closest .verse-card" 
+            hx-swap="outerHTML">Cancel</button>
+        <button hx-put="{{ url_for('edit_card_title', uuid=card.uuid) }}" 
+            hx-target="closest .verse-card"
+            hx-swap="outerHTML">Save</button>
+    </form>
+</details>
+

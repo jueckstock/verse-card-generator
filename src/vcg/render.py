@@ -10,6 +10,8 @@ from dataclasses import dataclass
 
 import pystache
 
+from .model import Card, Verse
+
 
 LATEX_FONT_SIZES = [f"\\{sz}" for sz in "tiny scriptsize footnotesize small normalsize large Large LARGE huge Huge".split()]
 FLASHCARD_PAPER_SIZES = ["avery5371", "avery5388"]
@@ -52,6 +54,8 @@ CARD_OPTION_MAP = {
         kind=bool, ctrl="checkbox", default=True),
     "columns": Option("Typeset verse texts into two columns.", 
         kind=bool, ctrl="checkbox", default=False),
+    "ragged_right": Option("Left-align verse texts (ragged-right) instead of centering.", 
+        kind=bool, ctrl="checkbox", default=True),
     "title_size": Option("LaTeX font size for reference/title.", 
         choices=LATEX_FONT_SIZES, ctrl="select", default="\\Huge"),
     "text_size": Option("LaTeX font size for verse text.", 
@@ -61,8 +65,10 @@ CARD_OPTION_MAP = {
 }
 
 
-def global_options(options: dict[str, object] = {}) -> str:
+def global_options(options: dict[str, object] | None = None) -> str:
     """Validate/default and render a set of global options to document class attributes."""
+    if options is None:
+        options = {}
     flats = []
     for okey, odef in DOC_OPTION_MAP.items():
         goval = odef.validate(options.get(okey, odef.default))
@@ -70,16 +76,11 @@ def global_options(options: dict[str, object] = {}) -> str:
     return ','.join(filter(None, flats))
 
 
-def optimized_card(card: dict) -> dict:
-    """Shallow-copy a card dictionary and make sure its options are fully validated/defaulted.
-
-    Schema: { title: "...", verses: [...], uuid: "...", options: {...}}
-    """
-    ncard = card.copy()
-    ncard["options"] = noptions = ncard.get("options", {})
+def optimized_card(card: Card) -> Card:
+    """Make sure the card's options are fully validated/defaulted."""
     for okey, odef in CARD_OPTION_MAP.items():
-        noptions[okey] = odef.validate(noptions.get(okey, odef.default))
-    return ncard
+        card.options[okey] = odef.validate(card.options.get(okey, odef.default))
+    return card
 
 
 CARD_SHEET_TEMPLATE = \
@@ -87,34 +88,25 @@ r"""{{=<< >>=}}\documentclass[<<doc_options>>]{flashcards}
 \usepackage{multicol}
 \begin{document}
 <<#cards>>
-\begin{flashcard}{<<options.title_size>>{<<title>>}}
-<<#options.columns>>\begin{multicols}{2}<</options.columns>>
-\raggedright
-<<#verses>>
-\textsuperscript{\textit{<<options.num_size>>{<<num>>}}}<<options.text_size>>{<<text>>}<<#options.paragraphs>>\par<</options.paragraphs>>
-<</verses>>
-<<#options.columns>>\end{multicols}<</options.columns>>
+\begin{flashcard}{<<options.title_size>>{<<title>>}}<<#options.columns>>
+\begin{multicols}{2}<</options.columns>><<#options.ragged_right>>
+\raggedright<</options.ragged_right>>
+<<#verses>><<#options.paragraphs>>\par<</options.paragraphs>>\textsuperscript{\textit{<<options.num_size>>{<<num>>}}}<<options.text_size>>{<<text>>}
+<</verses>><<#options.columns>>\end{multicols}
+<</options.columns>>
 \end{flashcard}
 <</cards>>
 \end{document}
 """
 
 
-def render_latex(cards: list[dict], options: dict[str, object] = {}, filename: str | None = None) -> str:
+def render_latex(cards: list[Card], options: dict[str, object] | None = None, filename: str | None = None) -> str:
     """Render a batch of cards as LaTeX and return the filename used.
 
     Used internally by `render_pdf` (where the `filename` is explicitly set).
     If `filename` is not set, generates one with `mkstemp`.
 
     `options` is a dictionary of global/document options (allowed to be empty/defaulted).
-
-    Cards are stored as dictionaries of plain JSON-serializable values.  Schema:
-        * title: plain text formatting of reference/title on front
-        * verses: array/list of dictionaries of
-            * num: integer verse number
-            * text: string verse text
-        * uuid: arbitrary UUID for card identity/removal
-        * options: possibly-empty dictionary of configuration keys for this particular verse card
     """
     if filename is None:
         scratch_fd, filename = tempfile.mkstemp(suffix=".tex")
@@ -132,7 +124,7 @@ def render_latex(cards: list[dict], options: dict[str, object] = {}, filename: s
     return filename
 
 
-def render_pdf(cards: list[dict], options: dict[str, object] = {}, keep_temp_dir: bool = False) -> str:
+def render_pdf(cards: list[Card], options: dict[str, object] = {}, keep_temp_dir: bool = False) -> str:
     """Render a batch of verse cards into a PDF file and return its path.
     
     Generates a temporary directory in which to generate/render LaTeX files.

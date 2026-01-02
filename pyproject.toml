@@ -18,7 +18,7 @@ dependencies = [
 ]
 
 [project.scripts]
-vcgd = "vcg.__main__:entry"
+vcgd = "vcg.app:entry"
 
 [build-system]
 requires = ["hatchling >= 1.26"]

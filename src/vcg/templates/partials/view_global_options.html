@@ -1,0 +1,18 @@
+<form hx-put="{{ url_for('set_doc_options') }}" hx-trigger="change" hx-swap="none">
+{% for okey, odef in doc_option_map.items() %}
+    <div><label>{{ odef.info }}
+    {% if odef.ctrl == "checkbox" %}
+        <input type="checkbox" name="{{ okey }}" {% if session.get("options", {}).get(okey, odef.default) %}checked{% endif %}>
+    {% elif odef.ctrl == "select" %}
+        <select name="{{ okey }}">
+        {% for sz in odef.choices %}
+            <option value="{{ sz }}" {% if session.get("options", {}).get(okey, odef.default) == sz %}selected{% endif %}>{{ sz }}</option>
+        {% endfor %}
+        </select>
+    {% else %}
+        <input type="text" name="{{ okey }}" value="{{ session.get("options", {}).get(okey, odef.default) }}>
+    {% endif %}
+    </label></div>
+{% endfor %}
+
+</form>

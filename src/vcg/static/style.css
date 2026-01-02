@@ -275,3 +275,14 @@ details.verse-card button.delete {
     right: 10px;
     color: red;
 }
+
+details.verse-card button.edit {
+    position: absolute;
+    right: 50px;
+    color: blue;
+}
+p.versetxt a {
+    color: teal;
+    font-style: italic;
+    cursor: pointer;
+}

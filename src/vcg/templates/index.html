@@ -3,40 +3,7 @@
 <div id="sidebar">
 <div id="existing-cards">
     {% for card in session.get("cards", []) %}
-    <details class="verse-card">
-        <summary>
-            {{ card.title }}
-            <button class="delete" hx-target="closest .verse-card" hx-swap="delete" hx-delete="{{ url_for('delete_card', uuid=card.uuid) }}">X</button>
-        </summary>
-        <form hx-put="{{ url_for('set_card_options', uuid=card.uuid) }}" hx-trigger="change" hx-swap="innerHTML settle:3s" hx-target="#toast-{{ card.uuid }}">
-            <fieldset><legend>Card Options:</legend>
-            <output id="toast-{{ card.uuid }}"></output>
-            {% for okey, odef in card_option_map.items() %}
-                <div><label>{{ odef.info }}
-                {% if odef.ctrl == "checkbox" %}
-                    <input type="checkbox" name="{{ okey }}" {% if card.get("options", {}).get(okey, odef.default) %}checked{% endif %}>
-                {% elif odef.ctrl == "select" %}
-                    <select name="{{ okey }}">
-                    {% for sz in odef.choices %}
-                        <option value="{{ sz }}" {% if card.get("options", {}).get(okey, odef.default) == sz %}selected{% endif %}>{{ sz }}</option>
-                    {% endfor %}
-                    </select>
-                {% else %}
-                    <input type="text" name="{{ okey }}" value="{{ card.get("options", {}).get(okey, odef.default) }}>
-                {% endif %}
-                </label></div>
-            {% endfor %}
-            </fieldset>
-        </form>
-        <table>
-            {% for vv in card.verses %}
-            <tr>
-                <td><span class="versenum">{{ vv.num }}.</span></td>
-                <td><p class="versetxt">{{ vv.text }}</p></td>
-            </tr>
-            {% endfor %}
-        </table>
-    </details>
+        {% include "partials/full_card.html" with context %}
     {% endfor %}
 </div>
 <div id="new-card">
@@ -49,7 +16,7 @@
         </ul>
     {% endif %}
 {% endwith %}
-<form id="new-card-form" method="POST">
+<form>
     <select name="book">
     {% with selbook = session.get("book") %}
     {% for key, book in bookmap %}
@@ -58,8 +25,14 @@
     {% endwith %}
     </select>
     <input name="chapvers" type="text" value="{{ session.get("chapvers", "") }}" autofocus>
-    <input name="action" type="submit" value="Add"><br/>
-    <hr />
+    <button hx-post="{{ url_for('add_card') }}" hx-target="#existing-cards" hx-swap="beforeend">Add</button>
+</form>
+<hr>
+<details><summary>Global Options</summary>
+    {% include "partials/view_global_options.html" %}
+</details>
+<hr>
+<form method="post">
     <input name="action" type="submit" value="Reset" onclick="return confirm('Are you SURE you want to reset and lose all your verse cards?!!')">
 </form>
 </div>
