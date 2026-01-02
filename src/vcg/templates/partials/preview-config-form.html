@@ -1,0 +1,20 @@
+<form id="preview-config-form">
+    <fieldset><legend>Preview:</legend>
+        <label>PDF<input type="radio" name="fmt" value="PDF" 
+            hx-post="{{ url_for('preview_config') }}" 
+            hx-target="#preview-config-form" hx-swap="outerHTML"
+            {% if session.get("preview_fmt", "PDF") == "PDF" %}checked{% endif %}></label>|
+        <label>LaTeX<input type="radio" name="fmt" value="LaTeX" 
+            hx-post="{{ url_for('preview_config') }}" 
+            hx-target="#preview-config-form" hx-swap="outerHTML"
+            {% if session.get("preview_fmt", "PDF") == "LaTeX" %}checked{% endif %}></label>|
+        <label>Auto-update: <input type="checkbox" name="auto" 
+            hx-post="{{ url_for('preview_config') }}" 
+            hx-target="#preview-config-form" hx-swap="outerHTML"
+            {% if session.get("auto_update", True) %}checked{% endif %}></label>
+        <button hx-get="{{ url_for('preview_output', fmt=session.get('preview_fmt', 'PDF')) }}" 
+            hx-target="#iframe-socket" hx-swap="innerHTML" 
+            hx-trigger="click{% if session.get("auto_update", True) %}, preview-update from:body{% endif %}">Update Now</button>
+    </fieldset>
+</form>
+

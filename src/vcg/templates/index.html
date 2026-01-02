@@ -1,14 +1,16 @@
 {% extends "base.html" %}
 {% block content %}
+<div id="sidebar">
 <div id="existing-cards">
     {% for card in session.get("cards", []) %}
     <details class="verse-card">
         <summary>
             {{ card.title }}
-            <button class="delete" hx-target="closest .verse-card" hx-swap="delete" hx-post="{{ url_for('delete_verse', uuid=card.uuid) }}">X</button>
+            <button class="delete" hx-target="closest .verse-card" hx-swap="delete" hx-delete="{{ url_for('delete_card', uuid=card.uuid) }}">X</button>
         </summary>
-        <form hx-put="{{ url_for('set_card_options', uuid=card.uuid) }}" hx-swap="innerHTML settle:3s" hx-target="#toast-{{ card.uuid }}">
+        <form hx-put="{{ url_for('set_card_options', uuid=card.uuid) }}" hx-trigger="change" hx-swap="innerHTML settle:3s" hx-target="#toast-{{ card.uuid }}">
             <fieldset><legend>Card Options:</legend>
+            <output id="toast-{{ card.uuid }}"></output>
             {% for okey, odef in card_option_map.items() %}
                 <div><label>{{ odef.info }}
                 {% if odef.ctrl == "checkbox" %}
@@ -20,12 +22,10 @@
                     {% endfor %}
                     </select>
                 {% else %}
-                    <input type="text" name="{{ okey }}" value="{{ card.get("options", {}).get(okey, odef.default) }}">
+                    <input type="text" name="{{ okey }}" value="{{ card.get("options", {}).get(okey, odef.default) }}>
                 {% endif %}
                 </label></div>
             {% endfor %}
-            <input type="submit" value="Apply">
-            <output id="toast-{{ card.uuid }}"></output>
             </fieldset>
         </form>
         <table>
@@ -57,12 +57,18 @@
     {% endfor %}
     {% endwith %}
     </select>
-    <input name="chapvers" type="text" value="{{ session.get("chapvers", "") }}">
+    <input name="chapvers" type="text" value="{{ session.get("chapvers", "") }}" autofocus>
     <input name="action" type="submit" value="Add"><br/>
     <hr />
-    <input name="action" type="submit" value="PDF">
-    <input name="action" type="submit" value="LaTeX">
     <input name="action" type="submit" value="Reset" onclick="return confirm('Are you SURE you want to reset and lose all your verse cards?!!')">
 </form>
+</div>
+</div>
+<div id="preview-frame">
+    <div id="iframe-socket">{% if session.get("auto_update", True) -%}
+        {% set fmt = session.get("preview_fmt", "PDF") %}
+        {% include "partials/preview-window.html" %}
+    {%- endif %}</div>
+    {% include "partials/preview-config-form.html" with context %}
 </div>
 {% endblock %}

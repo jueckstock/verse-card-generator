@@ -10,7 +10,10 @@ requires-python = ">=3.13"
 license = "GPL-2.0"
 license-files = ["LICENSE"]
 dependencies = [
+        "cachelib",
 	"flask",
+        "flask-htmx",
+        "Flask-Session[cachelib]",
 	"pystache",
 ]
 
